@@ -1,3 +1,4 @@
+[ ![Download](https://api.bintray.com/packages/zozol/BotListAPI/BotListAPI/images/download.svg?version=0.1) ](https://bintray.com/zozol/BotListAPI/BotListAPI/0.1/link)
 # BotListAPI
 Java API dla https://dbl.kresmc.pl/api
 
