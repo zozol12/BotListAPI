@@ -26,6 +26,6 @@ repositories {
 
 dependencies {
 	[...]
-	compile group: 'me.zozol', name: 'BotListAPI',   version: '0.1'
+	implementation 'com.github.zozol12:BotListAPI:0.1'
 }
 ```
