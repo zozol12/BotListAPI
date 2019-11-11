@@ -19,6 +19,11 @@ api.getBot().getVotes();
 
 ## Pobieranie
 ```gradle
+repositories {
+	[...]
+	maven { url 'https://jitpack.io' }
+}
+
 dependencies {
 	[...]
 	compile group: 'me.zozol', name: 'BotListAPI',   version: '0.1'
