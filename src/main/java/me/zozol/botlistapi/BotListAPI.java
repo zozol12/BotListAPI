@@ -14,9 +14,14 @@
  *    limitations under the License.
  */
 
-package me.zozol.api;
+package me.zozol.botlistapi;
 
-import me.zozol.api.http.ListedBot;
+import me.zozol.botlistapi.http.WebHook.WebhookServer;
+import me.zozol.botlistapi.http.ListedBot;
+import me.zozol.botlistapi.http.WebHook.WebhookListener;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public interface BotListAPI {
     Bot getBot(String botId);
@@ -29,6 +34,10 @@ public interface BotListAPI {
 
         private String botId = null;
         private String botToken = null;
+        private String webhookUrl = null;
+        private Integer webhookPort = null;
+        private String webhookAuth = null;
+        private Set<WebhookListener> listeners= new HashSet<>();
 
 
 
@@ -43,15 +52,35 @@ public interface BotListAPI {
             return this;
         }
 
+        public builder registerListener(WebhookListener listener){
+            listeners.add(listener);
+            return this;
+        }
+
         public builder setBotId(String botId) {
             this.botId = botId;
+            return this;
+        }
+
+        public builder setWebhookUrl(String webhookUrl,int port) {
+            this.webhookUrl = webhookUrl;
+            this.webhookPort= port;
+            return this;
+        }
+
+        public builder setWebhookAuth(String webhookAuth) {
+            this.webhookAuth = webhookAuth;
             return this;
         }
 
         public BotListAPI build() {
             if(botToken == null||botId == null)
                 throw new IllegalArgumentException("Nie podano id lub tokenu!");
-
+            if(!listeners.isEmpty()) {
+                WebhookServer server = new WebhookServer.Builder().setHost(webhookUrl).setPort(webhookPort).setAuthorization(webhookAuth).setBotId(botId).build();
+                server.registerListeners(listeners);
+                server.start();
+            }
             return new ListedBot(botToken, botId);
         }
 

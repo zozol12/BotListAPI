@@ -14,13 +14,13 @@
  *    limitations under the License.
  */
 
-package me.zozol.api.http;
+package me.zozol.botlistapi.http;
 
 import com.fatboyindustrial.gsonjavatime.OffsetDateTimeConverter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import me.zozol.api.Bot;
-import me.zozol.api.BotListAPI;
+import me.zozol.botlistapi.Bot;
+import me.zozol.botlistapi.BotListAPI;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -100,6 +100,7 @@ public class ListedBot implements BotListAPI {
             return false;
         }
     }
+
 
 
 

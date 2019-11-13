@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package me.zozol.api;
+package me.zozol.botlistapi;
 
 import com.google.gson.annotations.SerializedName;
 
