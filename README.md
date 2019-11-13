@@ -16,6 +16,26 @@ np.
 ```java
 api.getBot().getVotes();
 ```
+4. **Webhooki:**
+
+klasa "Listener":
+```java
+public class TestListener implements WebhookListener {
+    @Override
+    public void onUserVote(String userId, String botId) {
+        [...]
+    }
+}
+```
+Builder:
+```java
+new BotListAPI.builder()
+	.setWebhookUrl(webhookUrl, webhookPort)
+	.setWebhookAuth(webhookPassword)
+        .setInfo(botToken, botId)
+        .registerListener(new TestListener)
+        .build();
+```
 
 ## Pobieranie
 ```gradle
@@ -26,6 +46,6 @@ repositories {
 
 dependencies {
 	[...]
-	implementation 'com.github.zozol12:BotListAPI:0.1'
+	implementation 'com.github.zozol12:BotListAPI:WERSJA'
 }
 ```
