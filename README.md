@@ -33,7 +33,7 @@ new BotListAPI.builder()
 	.setWebhookUrl(webhookUrl, webhookPort)
 	.setWebhookAuth(webhookPassword)
         .setInfo(botToken, botId)
-        .registerListener(new TestListener)
+        .registerListener(new TestListener())
         .build();
 ```
 
