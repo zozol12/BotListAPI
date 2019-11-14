@@ -34,8 +34,6 @@ public class WebhookServer {
         private String authorization = null;
         private String botId = null;
         private String host = "localhost";
-        private String errorResponseMessage = "{\"error\": \"Bad request\"}";
-        private String successResponseMessage = "{\"success\": \"OK\"}";
         private int port = 8080;
         private boolean silent = false;
 
@@ -54,23 +52,9 @@ public class WebhookServer {
             return this;
         }
 
-        public Builder setErrorResponse(String responseMessage) {
-            this.errorResponseMessage = responseMessage;
-            return this;
-        }
-
-        public Builder setSuccessResponse(String responseMessage) {
-            this.successResponseMessage = responseMessage;
-            return this;
-        }
-
         public Builder setPort(int port) {
             this.port = port;
             return this;
-        }
-
-        public Builder setSilent() {
-            return setSilent(true);
         }
 
         public Builder setSilent(boolean silent) {
@@ -80,39 +64,24 @@ public class WebhookServer {
 
         public WebhookServer build() {
             if (botId == null)
-                throw new NullPointerException("Bot id can not be null!");
-            return new WebhookServer(authorization, botId, host, errorResponseMessage, successResponseMessage, port, silent);
+                throw new NullPointerException("id bota nieprawidłowe!");
+            return new WebhookServer(authorization, host, port, silent);
         }
     }
 
     private Undertow server;
-    private String authorization;
-    private String botId;
-    private String host;
-    private String errorResponseMessage;
-    private String successResponseMessage;
-    private int port;
-    private boolean silent;
 
     private Set<WebhookListener> webhookListeners;
     private Logger logger;
 
-    public WebhookServer(String authorization, String botId, String host, String errorResponseMessage, String successResponseMessage, int port, boolean silent) {
-        this.authorization = authorization;
-        this.botId = botId;
-        this.host = host;
-        this.errorResponseMessage = errorResponseMessage;
-        this.successResponseMessage = successResponseMessage;
-        this.port = port;
-        this.silent = silent;
-
+    public WebhookServer(String authorization, String host, int port, boolean silent) {
         webhookListeners = new HashSet<>();
         logger = ListedBot.logger;
         server = Undertow.builder()
                 .addHttpListener(port, host)
                 .setHandler(exchange -> {
                     if (!silent)
-                        logger.info("[Webserver > dbl.kresmc.pl] Handling request: " + exchange.getRequestURL());
+                        logger.info("[Webserver > dblista.pl] Przetwarzam żądanie: " + exchange.getRequestURL());
                     HeaderMap headerValues = exchange.getRequestHeaders();
                     try {
                         AtomicBoolean allowed = new AtomicBoolean(false);
@@ -127,17 +96,21 @@ public class WebhookServer {
                         }
 
                         if (!allowed.get()) {
-                            if (!silent) logger.info("[Webserver > dbl.kresmc.pl] Request failed");
+                            logger.warn("[Webserver > dblista.pl] Problem z autoryzacją");
                             exchange.getResponseHeaders().put(Headers.STATUS, 400);
-                            exchange.getResponseSender().send(errorResponseMessage);
                             return;
                         }
 
                         exchange.getRequestReceiver().receiveFullString((httpServerExchange, s) -> {
-                            if (!silent) logger.info("[Webserver > dbl.kresmc.pl] Parsing request...");
-
+                            if (!silent) logger.info("[Webserver > dblista.pl] Przetwarzanie rządania...");
                             JsonElement element = new JsonParser().parse(s);
+
                             JsonObject object = element.getAsJsonObject();
+
+                            if (object.get("type").toString().equals("vote")) {
+                                if (!silent) logger.info("[Webserver > dblista.pl] żądanie nie jest głosem...");
+                                return;
+                            }
 
                             String user = object.get("user").getAsString();
                             String bot = object.get("bot").getAsString();
@@ -145,15 +118,13 @@ public class WebhookServer {
                             callListeners(user, bot);
 
                             if (!silent)
-                                logger.info("[Webserver > dbl.kresmc.pl] Request parsed, vote listeners were called");
+                                logger.info("[Webserver > dblista.pl] Rządanie przetworzone");
                             exchange.getResponseHeaders().put(Headers.STATUS, 200);
-                            exchange.getResponseSender().send(successResponseMessage);
                         });
                     } catch (Exception ignored) {
                         if (!silent)
-                            logger.warn("[Webserver > dbl.kresmc.pl] Could not handle request");
+                            logger.warn("[Webserver > dblista.pl] Nie można obsłużyć żądania");
                         exchange.getResponseHeaders().put(Headers.STATUS, 400);
-                        exchange.getResponseSender().send(errorResponseMessage);
                     }
                 }).build();
     }
@@ -166,19 +137,7 @@ public class WebhookServer {
         webhookListeners.addAll(listeners);
     }
 
-    public void registerListener(WebhookListener listener) {
-        webhookListeners.add(listener);
-    }
-
-    public void unregisterListener(WebhookListener listener) {
-        webhookListeners.remove(listener);
-    }
-
     public void start() {
         server.start();
-    }
-
-    public void stop() {
-        server.stop();
     }
 }

@@ -25,8 +25,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,33 +35,29 @@ import java.time.OffsetDateTime;
 
 public class ListedBot implements BotListAPI {
 
-    public static final Logger logger
-            = LoggerFactory.getLogger(BotListAPI.class);
-
     private HttpPost post;
 
     private final Gson gson;
 
     private final String botToken, botId;
 
-    public ListedBot(String botToken, String botId) {
-        logger.info("inicjalizacja...");
+    public ListedBot(String botToken, String botId, boolean silent) {
         this.botToken = botToken;
         this.botId = botId;
 
-        post=new HttpPost("https://dbl.kresmc.pl/api/stats/"+botId);
+        post=new HttpPost("https://dblista.pl/api/stats/"+botId);
 
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeConverter())
                 .create();
 
-        logger.info("Pomyślna inicjalizacja.");
+        if(!silent)logger.info("Pomyślna inicjalizacja.");
     }
 
     @Override
     public Bot getBot(String botId) {
         try {
-            return gson.fromJson(new BufferedReader(new InputStreamReader(new URL("https://dbl.kresmc.pl/api/lista/"+botId).openStream(), StandardCharsets.UTF_8))
+            return gson.fromJson(new BufferedReader(new InputStreamReader(new URL("https://dblista.pl/api/lista/"+botId).openStream(), StandardCharsets.UTF_8))
                     , Bot.class);
         } catch (IOException e) {
             e.printStackTrace();
@@ -74,7 +68,7 @@ public class ListedBot implements BotListAPI {
     @Override
     public Bot getBot() {
         try {
-            return gson.fromJson(new BufferedReader(new InputStreamReader(new URL("https://dbl.kresmc.pl/api/lista/"+botId).openStream(), StandardCharsets.UTF_8))
+            return gson.fromJson(new BufferedReader(new InputStreamReader(new URL("https://dblista.pl/api/lista/"+botId).openStream(), StandardCharsets.UTF_8))
                     , Bot.class);
         } catch (IOException e) {
             return null;
@@ -92,11 +86,11 @@ public class ListedBot implements BotListAPI {
         post.setEntity(new StringEntity(json));
         try (CloseableHttpClient httpClient = HttpClients.createDefault()){
              httpClient.execute(post);
-             post=new HttpPost("https://dbl.kresmc.pl/api/stats/"+botId);
+             post=new HttpPost("https://dblista.pl/api/stats/"+botId);
              return true;
         }catch (Exception e){
             e.printStackTrace();
-            post=new HttpPost("https://dbl.kresmc.pl/api/stats/"+botId);
+            post=new HttpPost("https://dblista.pl/api/stats/"+botId);
             return false;
         }
     }
@@ -111,7 +105,7 @@ public class ListedBot implements BotListAPI {
             return executePost(servers,users);
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            return false;
         }
     }
 

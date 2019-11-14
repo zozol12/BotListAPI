@@ -19,12 +19,17 @@ package me.zozol.botlistapi;
 import me.zozol.botlistapi.http.WebHook.WebhookServer;
 import me.zozol.botlistapi.http.ListedBot;
 import me.zozol.botlistapi.http.WebHook.WebhookListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public interface BotListAPI {
     Bot getBot(String botId);
+
+    public static final Logger logger
+            = LoggerFactory.getLogger(BotListAPI.class);
 
     Bot getBot();
 
@@ -36,6 +41,7 @@ public interface BotListAPI {
         private String botToken = null;
         private String webhookUrl = null;
         private Integer webhookPort = null;
+        private boolean silent = false;
         private String webhookAuth = null;
         private Set<WebhookListener> listeners= new HashSet<>();
 
@@ -62,6 +68,11 @@ public interface BotListAPI {
             return this;
         }
 
+        public builder setSilent(boolean silent) {
+            this.silent = silent;
+            return this;
+        }
+
         public builder setWebhookUrl(String webhookUrl,int port) {
             this.webhookUrl = webhookUrl;
             this.webhookPort= port;
@@ -74,14 +85,15 @@ public interface BotListAPI {
         }
 
         public BotListAPI build() {
+            if(!silent)logger.info("inicjalizacja...");
             if(botToken == null||botId == null)
                 throw new IllegalArgumentException("Nie podano id lub tokenu!");
             if(!listeners.isEmpty()) {
-                WebhookServer server = new WebhookServer.Builder().setHost(webhookUrl).setPort(webhookPort).setAuthorization(webhookAuth).setBotId(botId).build();
+                WebhookServer server = new WebhookServer.Builder().setSilent(silent).setHost(webhookUrl).setPort(webhookPort).setAuthorization(webhookAuth).setBotId(botId).build();
                 server.registerListeners(listeners);
                 server.start();
             }
-            return new ListedBot(botToken, botId);
+            return new ListedBot(botToken, botId, silent);
         }
 
     }
