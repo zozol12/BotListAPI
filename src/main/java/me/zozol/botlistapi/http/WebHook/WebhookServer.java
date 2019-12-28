@@ -102,7 +102,7 @@ public class WebhookServer {
                         }
 
                         exchange.getRequestReceiver().receiveFullString((httpServerExchange, s) -> {
-                            if (!silent) logger.info("[Webserver > dblista.pl] Przetwarzanie rządania...");
+                            if (!silent) logger.info("[Webserver > dblista.pl] Przetwarzanie żądania...");
                             JsonElement element = new JsonParser().parse(s);
 
                             JsonObject object = element.getAsJsonObject();
@@ -118,7 +118,7 @@ public class WebhookServer {
                             callListeners(user, bot);
 
                             if (!silent)
-                                logger.info("[Webserver > dblista.pl] Rządanie przetworzone");
+                                logger.info("[Webserver > dblista.pl] Żądanie przetworzone");
                             exchange.getResponseHeaders().put(Headers.STATUS, 200);
                         });
                     } catch (Exception ignored) {
